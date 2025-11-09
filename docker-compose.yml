@@ -1,0 +1,54 @@
+version: '3.9'
+services:
+  gateway:
+    build: ./gateway
+    ports:
+      - "8000:8000"
+    depends_on:
+      - rabbitmq
+    environment:
+      - RABBIT_URL=amqp://rabbitmq
+
+  user-service:
+    build: ./user-service
+    ports:
+      - "8001:8000"
+    environment:
+      - DATABASE_URL=postgresql://user:pass@postgres/userdb
+
+  email-service:
+    build: ./email-service
+    depends_on:
+      - rabbitmq
+    environment:
+      - RABBIT_URL=amqp://rabbitmq
+
+  push-service:
+    build: ./push-service
+    depends_on:
+      - rabbitmq
+    environment:
+      - RABBIT_URL=amqp://rabbitmq
+
+  template-service:
+    build: ./template-service
+    ports:
+      - "8002:8000"
+
+  rabbitmq:
+    image: rabbitmq:3-management
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+
+  postgres:
+    image: postgres:15
+    environment:
+      - POSTGRES_PASSWORD=pass
+      - POSTGRES_USER=user
+      - POSTGRES_DB=userdb
+
+  redis:
+    image: redis:latest
+    ports:
+      - "6379:6379"
