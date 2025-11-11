@@ -1,4 +1,5 @@
-import { Injectable, HttpService } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
+import { HttpService } from '@nestjs/axios';
 import { lastValueFrom } from 'rxjs';
 import { SendNotificationDto } from './dto/send-notification.dto';
 import { NOTIFICATION_SERVICE_URL } from '../config/services.config';
