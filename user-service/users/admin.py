@@ -1,7 +1,7 @@
 from django.contrib import admin
 
 # Register your models here.
-from .models import User, PushToken
+from .models import User, PushToken, NotificationPreferences
 
 @admin.register(User)
 class UserAdmin(admin.ModelAdmin):
@@ -15,3 +15,10 @@ class PushTokenAdmin(admin.ModelAdmin):
     search_fields = ('user__email', 'device_type')
     ordering = ('-created_at',)
     readonly_fields = ('created_at',)
+
+@admin.register(NotificationPreferences)
+class NotificationPreferencesAdmin(admin.ModelAdmin):
+    list_display = ('user', 'email_notifications', 'push_notifications', 'sms_notifications', 'categories')
+    search_fields = ('user__email',)
+    ordering = ('user__email',)
+    readonly_fields = ('id',)
