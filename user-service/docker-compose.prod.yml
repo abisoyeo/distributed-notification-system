@@ -1,0 +1,65 @@
+version: '3.8'
+
+# Production Docker Compose Configuration
+# This file is optimized for production deployment with external services (Aiven)
+
+services:
+  user-service:
+    build: 
+      context: .
+      dockerfile: Dockerfile
+    container_name: user-service-app-prod
+    ports:
+      - "${SERVICE_PORT:-8000}:8000"
+    environment:
+      # Django settings
+      - DJANGO_SETTINGS_MODULE=user_service.settings
+      - SECRET_KEY=${SECRET_KEY}
+      - DEBUG=False
+      - ALLOWED_HOSTS=${ALLOWED_HOSTS}
+      
+      # External PostgreSQL (Aiven)
+      - USE_POSTGRES=true
+      - DB_NAME=${DB_NAME}
+      - DB_USER=${DB_USER}
+      - DB_PASSWORD=${DB_PASSWORD}
+      - DB_HOST=${DB_HOST}
+      - DB_PORT=${DB_PORT}
+      
+      # External Redis (Aiven or other)
+      - USE_REDIS=${USE_REDIS:-true}
+      - REDIS_HOST=${REDIS_HOST}
+      - REDIS_PORT=${REDIS_PORT}
+      - REDIS_DB=${REDIS_DB:-0}
+      - REDIS_PASSWORD=${REDIS_PASSWORD}
+      
+      # Python settings
+      - PYTHONUNBUFFERED=1
+    env_file:
+      - .env
+    volumes:
+      # Production: Only mount logs and static files, NOT source code
+      - ./logs:/app/logs
+      - static_volume:/app/static
+      - media_volume:/app/media
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          cpus: '2'
+          memory: 1G
+        reservations:
+          cpus: '0.5'
+          memory: 256M
+
+volumes:
+  static_volume:
+    driver: local
+  media_volume:
+    driver: local

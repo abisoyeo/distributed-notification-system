@@ -24,20 +24,32 @@ class CustomUserManager(BaseUserManager):
             raise ValueError("Superuser must have is_superuser=True.")
         
         return self.create_user(email, password, **extra_fields)
-# Create your models here.
 
 class User(AbstractBaseUser, PermissionsMixin):
-
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    name = models.CharField(max_length=255, default='')  # Changed from full_name to name, added default
     email = models.EmailField(unique=True)
-    full_name = models.CharField(max_length=255, blank=True)
+    push_token = models.CharField(max_length=512, blank=True, null=True)  # Added push_token
+    # password is inherited from AbstractBaseUser (hashed automatically)
+    preferences = models.JSONField(default=dict, blank=True)  # Added preferences as JSONField
     is_active = models.BooleanField(default=True)
     is_staff = models.BooleanField(default=False)
-    date_joined = models.DateTimeField(auto_now_add=True)
+    created_at = models.DateTimeField(auto_now_add=True, null=True, blank=True)  # Changed from date_joined
+    updated_at = models.DateTimeField(auto_now=True, null=True, blank=True)  # Added updated_at
 
     objects = CustomUserManager()
     USERNAME_FIELD = 'email'
-    REQUIRED_FIELDS = ['full_name']
+    REQUIRED_FIELDS = ['name']  # Changed from full_name
+    
+    def save(self, *args, **kwargs):
+        # Set default preferences if not provided
+        if not self.preferences:
+            self.preferences = {
+                'email': True,
+                'push': True
+            }
+        super().save(*args, **kwargs)
+    
     def __str__(self):
         return self.email
 
@@ -57,7 +69,7 @@ class PushToken(models.Model):
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     user = models.ForeignKey('User', on_delete=models.CASCADE, related_name='push_tokens')
-    device_id = models.CharField(max_length=255, blank=True, null=True)  # Added device_id
+    device_id = models.CharField(max_length=255, blank=True, null=True)
     token = models.CharField(max_length=512)
     device_type = models.CharField(max_length=32, choices=DEVICE_CHOICES, default=OTHER)
     is_active = models.BooleanField(default=True)
@@ -74,7 +86,7 @@ class PushToken(models.Model):
 
 class NotificationPreferences(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    user = models.OneToOneField('User', on_delete=models.CASCADE, related_name='preferences')
+    user = models.OneToOneField('User', on_delete=models.CASCADE, related_name='notification_preferences')
     email_notifications = models.BooleanField(default=True)
     push_notifications = models.BooleanField(default=True)
     sms_notifications = models.BooleanField(default=False)

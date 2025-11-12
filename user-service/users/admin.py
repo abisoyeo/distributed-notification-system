@@ -1,13 +1,12 @@
 from django.contrib import admin
-
-# Register your models here.
 from .models import User, PushToken, NotificationPreferences
 
 @admin.register(User)
 class UserAdmin(admin.ModelAdmin):
-    list_display = ('email', 'full_name', 'is_active', 'is_staff', 'date_joined')
-    search_fields = ('email', 'full_name')
+    list_display = ('email', 'name', 'is_active', 'is_staff', 'created_at', 'updated_at')
+    search_fields = ('email', 'name')
     ordering = ('email',)
+    readonly_fields = ('created_at', 'updated_at')
 
 @admin.register(PushToken)
 class PushTokenAdmin(admin.ModelAdmin):
