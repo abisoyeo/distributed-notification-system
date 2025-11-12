@@ -1,6 +1,0 @@
-{
-  "dependencies": {
-    "@nestjs/microservices": "^11.1.8",
-    "amqplib": "^0.10.9"
-  }
-}
