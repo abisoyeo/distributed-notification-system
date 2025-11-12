@@ -16,7 +16,7 @@ export default () => ({
 
   // RabbitMQ Configuration
   rabbit: {
-    url: process.env.RABBITMQ_URL || 'amqp://user:password@rabbitmq',
+    url: process.env.RABBITMQ_URL || 'amqp://localhost',
     emailQueue: 'email.queue',
     dlxExchange: 'dlx.exchange',
     failedQueue: 'email.failed',
