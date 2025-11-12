@@ -71,7 +71,9 @@ if USE_POSTGRES:
                 'sslmode': 'require',
                 'connect_timeout': 30,
             },
-            'CONN_MAX_AGE': 60,
+            # Set to 0 in development to close connections after each request
+            # This prevents connection pool exhaustion during development
+            'CONN_MAX_AGE': 0 if DEBUG else 300,
         }
     }
 else:
