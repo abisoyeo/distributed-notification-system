@@ -1,41 +1,65 @@
-import { Controller, Post, Body, Get, Param } from '@nestjs/common';
+import {
+  Controller,
+  Post,
+  Body,
+  Get,
+  Param,
+  HttpException,
+  HttpStatus,
+} from '@nestjs/common';
 import { NotificationsService } from './notifications.service';
 import { SendNotificationDto } from './dto/send-notification.dto';
-import { HttpService } from '@nestjs/axios';
-import { firstValueFrom } from 'rxjs';
-import { NotificationResponse } from './entities/notification.entity';
+import { UpdateStatusDto } from './dto/update-status.dto';
 
 @Controller('notifications')
 export class NotificationsController {
-  private notificationServiceUrl =
-    process.env.NOTIFICATION_SERVICE_URL || 'http://localhost:3002';
+  constructor(private readonly notificationsService: NotificationsService) {}
 
-  constructor(
-    private readonly notificationsService: NotificationsService,
-    private readonly http: HttpService,
-  ) {}
-
+  /**
+   * Gateway endpoint that accepts notification requests
+   */
   @Post('send-notification')
-  async sendNotification(
-    @Body() body: SendNotificationDto,
-  ): Promise<NotificationResponse> {
-    const response = await firstValueFrom(
-      this.http.post<NotificationResponse>(
-        `${this.notificationServiceUrl}/send`,
-        body,
-      ),
+  async sendNotification(@Body() dto: SendNotificationDto) {
+    try {
+      const result =
+        await this.notificationsService.handleSendNotification(dto);
+      return {
+        request_id: dto.request_id,
+        status: 'pending',
+        type: dto.notification_type,
+        user: dto.user_id,
+        result,
+      };
+    } catch (error) {
+      throw new HttpException(
+        error.message || 'Failed to send notification',
+        error.status || HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
+
+  /**
+   * Endpoint for worker services (email/push) to update statuses
+   */
+  @Post(':notification_preference/status')
+  async updateStatus(
+    @Param('notificationId') notification_preference: string,
+    @Body() dto: UpdateStatusDto,
+  ) {
+    const result = await this.notificationsService.updateStatus(
+      dto,
+      notification_preference,
     );
-    return response.data;
+    return { success: true, result };
   }
 
-  @Get('status/:id')
-  status(@Param('id') id: string) {
-    // Optional: can be implemented with Notification Service later
-    return { id, status: 'queued' };
-  }
-
-  @Get('health')
-  health() {
-    return { status: 'ok' };
+  /**
+   * Optional internal monitoring endpoint
+   */
+  @Get(':notificationId/statuses')
+  async getStatuses(@Param('notificationId') notificationId: string) {
+    const statuses =
+      await this.notificationsService.getStatuses(notificationId);
+    return { success: true, statuses };
   }
 }

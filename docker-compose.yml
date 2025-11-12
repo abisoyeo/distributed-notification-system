@@ -7,8 +7,6 @@ services:
     depends_on:
       rabbitmq:
         condition: service_healthy
-      notification-service:
-        condition: service_started
     networks:
       - notif-net
     environment:
@@ -24,11 +22,6 @@ services:
       - postgres
     environment:
       - DATABASE_URL=postgresql://user:pass@postgres/userdb
-
-  notification-service:
-    image: your_notification_service_image_or_stub
-    networks:
-      - notif-net
 
   email-service:
     build: ./email-service
