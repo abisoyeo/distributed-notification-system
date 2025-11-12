@@ -1,34 +1,19 @@
-import {
-  Entity,
-  PrimaryGeneratedColumn,
-  Column,
-  CreateDateColumn,
-  UpdateDateColumn,
-} from 'typeorm';
+import { Schema } from 'redis-om';
 
-@Entity('notification_statuses')
-export class NotificationStatus {
-  @PrimaryGeneratedColumn('uuid')
-  id: string;
-
-  @Column()
-  notificationId: string; // corresponds to the notification the service is reporting on
-
-  @Column()
-  channel: string; // e.g. "email", "push", "sms"
-
-  @Column()
-  status: string; // e.g. "pending", "sent", "failed", "delivered"
-
-  @Column({ nullable: true })
-  messageId?: string; // optional — from email provider or push system
-
-  @Column({ type: 'text', nullable: true })
+export interface NotificationStatus {
+  notificationId: string;
+  channel: string;
+  status: string;
+  messageId?: string;
   errorMessage?: string;
-
-  @CreateDateColumn()
   createdAt: Date;
-
-  @UpdateDateColumn()
-  updatedAt: Date;
 }
+
+export const notificationStatusSchema = new Schema('NotificationStatus', {
+  notificationId: { type: 'string', indexed: true },
+  channel: { type: 'string' },
+  status: { type: 'string' },
+  messageId: { type: 'string' },
+  errorMessage: { type: 'string' },
+  createdAt: { type: 'date', sortable: true },
+});

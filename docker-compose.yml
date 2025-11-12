@@ -6,7 +6,7 @@ services:
       - "3000:3000"
     depends_on:
       - rabbitmq
-      - notification-service
+      - redis
     networks:
       - notif-net
     environment:
@@ -18,11 +18,6 @@ services:
       - "8001:8000"
     environment:
       - DATABASE_URL=postgresql://user:pass@postgres/userdb
-
-  notification-service:
-    image: your_notification_service_image_or_stub
-    networks:
-      - notif-net
 
   email-service:
     build: ./email-service
