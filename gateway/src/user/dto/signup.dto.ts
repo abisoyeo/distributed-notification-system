@@ -4,7 +4,13 @@ import { ApiProperty } from '@nestjs/swagger';
 export class SignupDto {
   @ApiProperty()
   email: string;
+  @ApiProperty()
   password: string;
+
+  @ApiProperty({
+    required: false,
+    example: { email: true, push: false, sms: true },
+  })
   preferences?: {
     email?: boolean;
     push?: boolean;

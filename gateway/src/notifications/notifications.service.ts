@@ -5,6 +5,7 @@ import { firstValueFrom } from 'rxjs';
 import { SendNotificationDto } from './dto/send-notification.dto';
 import { UpdateStatusDto } from './dto/update-status.dto';
 import { NotificationRepository } from './notifications.repo.service';
+import * as amqp from 'amqplib';
 
 @Injectable()
 export class NotificationsService {
@@ -25,51 +26,70 @@ export class NotificationsService {
    */
   async handleSendNotification(dto: SendNotificationDto) {
     try {
-      const userResponse = await firstValueFrom(
-        this.http.get(`${this.userServiceUrl}/${dto.user_id}`),
-      );
-      const user = userResponse.data;
+      // const userResponse = await firstValueFrom(
+      //   this.http.get(`${this.userServiceUrl}/${dto.user_id}`),
+      // );
+      // const user = userResponse.data;
 
-      const templateResponse = await firstValueFrom(
-        this.http.get(
-          `${this.templateServiceUrl}/templates/${dto.template_code}`,
-        ),
-      );
-      const template = templateResponse.data;
+      // const templateResponse = await firstValueFrom(
+      //   this.http.get(
+      //     `${this.templateServiceUrl}/templates/${dto.template_code}`,
+      //   ),
+      // );
+      // const template = templateResponse.data;
 
-      if (!user || !template) {
-        throw new HttpException(
-          'User or template not found',
-          HttpStatus.NOT_FOUND,
-        );
-      }
+      // if (!user || !template) {
+      //   throw new HttpException(
+      //     'User or template not found',
+      //     HttpStatus.NOT_FOUND,
+      //   );
+      // }
 
-      if (
-        dto.notification_type === 'email' &&
-        user.preferences?.email === false
-      ) {
-        throw new HttpException(
-          'User has disabled email notifications',
-          HttpStatus.BAD_REQUEST,
-        );
-      }
-      if (
-        dto.notification_type === 'push' &&
-        user.preferences?.push === false
-      ) {
-        throw new HttpException(
-          'User has disabled push notifications',
-          HttpStatus.BAD_REQUEST,
-        );
-      }
+      // if (
+      //   dto.notification_type === 'email' &&
+      //   user.preferences?.email === false
+      // ) {
+      //   throw new HttpException(
+      //     'User has disabled email notifications',
+      //     HttpStatus.BAD_REQUEST,
+      //   );
+      // }
+      // if (
+      //   dto.notification_type === 'push' &&
+      //   user.preferences?.push === false
+      // ) {
+      //   throw new HttpException(
+      //     'User has disabled push notifications',
+      //     HttpStatus.BAD_REQUEST,
+      //   );
+      // }
 
-      const content = this.mergeTemplate(template.content, dto.variables);
+      // const content = this.mergeTemplate(template.content, dto.variables);
+
+      // Mock user & template data for now:
+      const user = {
+        email: 'ogunmonaa@gmail.com',
+        preferences: { email: true },
+      };
+
+      const template = {
+        id: 102,
+        language_code: 'es',
+      };
 
       const queuePayload = {
-        ...dto,
-        recipient:
-          dto.notification_type === 'email' ? user.email : user.push_token,
-        content,
+        pattern: 'email',
+        data: {
+          correlation_id: dto.request_id,
+          to_email: user.email,
+          template_id: template.id,
+          language_code: template.language_code,
+          data: {
+            username: dto.variables.name,
+            updateDate: dto.variables.meta?.date || 'N/A',
+            settingsLink: dto.variables.link,
+          },
+        },
       };
 
       const routingKey =
@@ -86,9 +106,10 @@ export class NotificationsService {
         );
       }
       if (dto.notification_type === 'email') {
-        await firstValueFrom(this.emailClient.emit(routingKey, queuePayload));
+        // await firstValueFrom(this.emailClient.emit(routingKey, queuePayload));
+        await this.publishToExchange(queuePayload);
       } else if (dto.notification_type === 'push') {
-        await firstValueFrom(this.pushClient.emit(routingKey, queuePayload));
+        // await firstValueFrom(this.pushClient.emit(routingKey, queuePayload));
       }
 
       this.statusRepo.create({
@@ -133,5 +154,27 @@ export class NotificationsService {
       result = result.replace(new RegExp(`{{${key}}}`, 'g'), value);
     }
     return result;
+  }
+
+  async publishToExchange(payload: any) {
+    const conn = await amqp.connect(
+      process.env.RABBITMQ_URL || 'amqp://localhost:5672',
+    );
+    const channel = await conn.createChannel();
+
+    const exchange = 'notifications.direct';
+    const routingKey = 'email';
+
+    await channel.publish(
+      exchange,
+      routingKey,
+      Buffer.from(JSON.stringify(payload)),
+      {
+        persistent: true,
+      },
+    );
+
+    await channel.close();
+    await conn.close();
   }
 }

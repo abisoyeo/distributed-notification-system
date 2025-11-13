@@ -24,7 +24,13 @@ import { NotificationRepository } from './notifications.repo.service';
         options: {
           urls: [process.env.RABBITMQ_URL || 'amqp://localhost:5672'],
           queue: 'push.queue', // Queue dedicated for push
-          queueOptions: { durable: true },
+          queueOptions: {
+            durable: true,
+            arguments: {
+              'x-dead-letter-exchange': 'dlx.notifications',
+              'x-dead-letter-routing-key': 'retry.email.1',
+            },
+          },
         },
       },
     ]),
