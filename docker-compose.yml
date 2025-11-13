@@ -16,6 +16,8 @@ services:
       - RABBITMQ_URL=amqp://admin:admin123@rabbitmq:5672
       - REDIS_HOST=redis
       - REDIS_PORT=6379
+      - USER_SERVICE_URL=http://user-service:8000
+      - TEMPLATE_SERVICE_URL=http://template-service:8000
 
   user-service:
     build: ./user-service
@@ -36,7 +38,7 @@ services:
     networks:
       - notif-net
     environment:
-      - ./email-service/.env.production
+      - RABBITMQ_URL=amqp://admin:admin123@rabbitmq:5672
     restart: unless-stopped
 
   push-service:
@@ -48,6 +50,9 @@ services:
       - notif-net
     environment:
       - RABBITMQ_URL=amqp://admin:admin123@rabbitmq:5672
+      - TEMPLATE_SERVICE_URL=http://template-service:8000
+      - REDIS_URL=redis://redis:6379
+      # - GOOGLE_APPLICATION_CREDENTIALS={"type": "service_account", "project_id": "your-project-id", ...}
 
   template-service:
     build: ./template-service
@@ -58,10 +63,10 @@ services:
     depends_on:
       - postgres
     environment:
-      - POSTGRE_DATABASE_URL=postgresql://user:pass@postgres/userdb
+      - DATABASE_URL=postgresql://user:pass@postgres/userdb
 
   rabbitmq:
-    image: rabbitmq:4-management
+    image: rabbitmq:3-management
     container_name: rabbitmq
     ports:
       - "5672:5672"
