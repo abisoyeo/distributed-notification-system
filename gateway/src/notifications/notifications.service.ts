@@ -25,51 +25,51 @@ export class NotificationsService {
    */
   async handleSendNotification(dto: SendNotificationDto) {
     try {
-      // const userResponse = await firstValueFrom(
-      //   this.http.get(`${this.userServiceUrl}/users/${dto.user_id}`),
-      // );
-      // const user = userResponse.data;
+      const userResponse = await firstValueFrom(
+        this.http.get(`${this.userServiceUrl}/${dto.user_id}`),
+      );
+      const user = userResponse.data;
 
-      // const templateResponse = await firstValueFrom(
-      //   this.http.get(
-      //     `${this.templateServiceUrl}/templates/${dto.template_code}`,
-      //   ),
-      // );
-      // const template = templateResponse.data;
+      const templateResponse = await firstValueFrom(
+        this.http.get(
+          `${this.templateServiceUrl}/templates/${dto.template_code}`,
+        ),
+      );
+      const template = templateResponse.data;
 
-      // if (!user || !template) {
-      //   throw new HttpException(
-      //     'User or template not found',
-      //     HttpStatus.NOT_FOUND,
-      //   );
-      // }
+      if (!user || !template) {
+        throw new HttpException(
+          'User or template not found',
+          HttpStatus.NOT_FOUND,
+        );
+      }
 
-      // if (
-      //   dto.notification_type === 'email' &&
-      //   user.preferences?.email === false
-      // ) {
-      //   throw new HttpException(
-      //     'User has disabled email notifications',
-      //     HttpStatus.BAD_REQUEST,
-      //   );
-      // }
-      // if (
-      //   dto.notification_type === 'push' &&
-      //   user.preferences?.push === false
-      // ) {
-      //   throw new HttpException(
-      //     'User has disabled push notifications',
-      //     HttpStatus.BAD_REQUEST,
-      //   );
-      // }
+      if (
+        dto.notification_type === 'email' &&
+        user.preferences?.email === false
+      ) {
+        throw new HttpException(
+          'User has disabled email notifications',
+          HttpStatus.BAD_REQUEST,
+        );
+      }
+      if (
+        dto.notification_type === 'push' &&
+        user.preferences?.push === false
+      ) {
+        throw new HttpException(
+          'User has disabled push notifications',
+          HttpStatus.BAD_REQUEST,
+        );
+      }
 
-      // const content = this.mergeTemplate(template.body, dto.variables);
+      const content = this.mergeTemplate(template.content, dto.variables);
 
       const queuePayload = {
         ...dto,
         recipient:
-          "'dto.notification_type === 'email' ? user.email : user.push_token'",
-        content: 'jjjjj',
+          dto.notification_type === 'email' ? user.email : user.push_token,
+        content,
       };
 
       const routingKey =
@@ -86,9 +86,9 @@ export class NotificationsService {
         );
       }
       if (dto.notification_type === 'email') {
-        await firstValueFrom(this.emailClient.emit('', queuePayload));
+        await firstValueFrom(this.emailClient.emit(routingKey, queuePayload));
       } else if (dto.notification_type === 'push') {
-        await firstValueFrom(this.pushClient.emit('', queuePayload));
+        await firstValueFrom(this.pushClient.emit(routingKey, queuePayload));
       }
 
       this.statusRepo.create({

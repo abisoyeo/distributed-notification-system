@@ -1,0 +1,30 @@
+# Node.js
+node_modules/
+dist/
+*.tsbuildinfo
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+pnpm-debug.log*
+
+# Environment
+.env
+.env.development
+.env.production
+.env.test
+.env.local
+
+# Git
+.git
+.gitignore
+
+# IDEs
+.vscode/
+.idea/
+
+# Test
+coverage/
+*.spec.ts
+*.e2e-spec.ts

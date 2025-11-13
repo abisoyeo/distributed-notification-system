@@ -28,7 +28,6 @@ RUN npm install -g pnpm
 WORKDIR /app
 
 COPY package.json pnpm-lock.yaml ./
-
 RUN pnpm install --frozen-lockfile --prod
 
 COPY --from=builder /app/dist ./dist
@@ -39,7 +38,6 @@ RUN addgroup -g 1001 -S nodejs && \
 RUN chown -R nestjs:nodejs /app
 
 USER nestjs
-
 
 EXPOSE 3000
 

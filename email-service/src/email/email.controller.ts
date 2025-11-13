@@ -28,7 +28,7 @@ export class EmailController {
     this.logger = new LoggerService();
   }
 
-  @MessagePattern('email')
+  @MessagePattern('email.queue')
   async handleEmailMessage(
     @Payload() msg: EmailMessage,
     @Ctx() context: RmqContext,
