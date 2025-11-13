@@ -47,7 +47,6 @@ class UserCreateView(generics.CreateAPIView):
 class UserRetrieveView(generics.RetrieveAPIView):
     queryset = User.objects.all()
     serializer_class = UserSerializer
-    permission_classes = [permissions.IsAuthenticated]
 
 
 class PreferencesRetrieveUpdateView(generics.RetrieveUpdateAPIView):
