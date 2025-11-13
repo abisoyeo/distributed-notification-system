@@ -4,6 +4,7 @@ export interface EmailMessage {
   template_id: number;
   data: Record<string, any>;
   retry_count?: number;
+  language_code: string;
 }
 
 export interface RabbitConfig {

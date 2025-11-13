@@ -4,14 +4,14 @@ export default () => ({
   templateServiceUrl:
     process.env.TEMPLATE_SERVICE_URL || 'http://template-service:8000',
 
-  senderEmail: process.env.SENDER_EMAIL || 'notifications@example.com',
+  senderEmail: process.env.SENDER_EMAIL || 'skylar.gulgowski@ethereal.email',
   serviceName: process.env.SERVICE_NAME || 'email_service',
 
   smtp: {
     host: process.env.SMTP_HOST || 'smtp.ethereal.email',
     port: parseInt(process.env.SMTP_PORT ?? '587', 10) || 587,
-    user: process.env.SMTP_USER || 'placeholder',
-    pass: process.env.SMTP_PASS || 'placeholder',
+    user: process.env.SMTP_USER || 'skylar.gulgowski@ethereal.email',
+    pass: process.env.SMTP_PASS || 'z8W97rvk1szuZGWEvj',
   },
 
   rabbit: {
