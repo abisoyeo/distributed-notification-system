@@ -15,7 +15,7 @@ RUN pip install uv
 COPY requirements.txt uv.lock ./
 
 # Install dependencies using uv
-RUN uv pip sync --no-cache
+RUN uv pip sync --system --no-cache requirements.txt
 
 # Copy the rest of the application code
 COPY ./app ./app
