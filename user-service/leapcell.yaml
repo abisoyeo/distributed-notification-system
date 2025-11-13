@@ -1,0 +1,63 @@
+# Leapcell Configuration File
+# Documentation: https://docs.leapcell.io
+
+name: user-service
+region: auto  # Leapcell will choose the best region
+
+# Build configuration
+build:
+  type: dockerfile
+  dockerfile: Dockerfile
+  context: .
+
+# Service configuration
+service:
+  type: web
+  port: 8000
+  
+  # Health check configuration
+  healthCheck:
+    path: /health
+    interval: 30
+    timeout: 5
+    retries: 3
+  
+  # Resource limits (adjust based on your Leapcell plan)
+  resources:
+    memory: 512Mi  # 512 MB RAM
+    cpu: 0.5       # 0.5 CPU cores
+
+# Environment variables (sensitive values should be set in Leapcell dashboard)
+env:
+  # Django settings
+  DJANGO_SETTINGS_MODULE: user_service.settings
+  PYTHONUNBUFFERED: "1"
+  
+  # App configuration (set actual values in Leapcell dashboard)
+  DEBUG: "False"
+  ALLOWED_HOSTS: ".leapcell.io,.leapcell.app"
+  
+  # Database configuration (use Aiven PostgreSQL - set actual values in dashboard)
+  USE_POSTGRES: "true"
+  DB_NAME: "user_service_db"
+  DB_USER: "avnadmin"
+  DB_HOST: "user-contries-currency1.i.aivencloud.com"
+  DB_PORT: "18360"
+  # DB_PASSWORD: Set in Leapcell dashboard (sensitive)
+  
+  # Redis configuration (set actual values in dashboard)
+  USE_REDIS: "true"
+  REDIS_PORT: "6379"
+  # REDIS_HOST: Set in Leapcell dashboard
+  # REDIS_PASSWORD: Set in Leapcell dashboard (if using password)
+  # SECRET_KEY: Set in Leapcell dashboard (sensitive)
+
+# Startup command (optional - Dockerfile already has CMD)
+# If you need to override the Dockerfile CMD, uncomment and modify:
+# start:
+#   command: sh -c "python manage.py migrate && python manage.py collectstatic --noinput && gunicorn user_service.wsgi:application --bind 0.0.0.0:8000 --workers 4"
+
+# Domain configuration (optional - add your custom domain)
+# domains:
+#   - yourdomain.com
+#   - www.yourdomain.com
