@@ -89,7 +89,7 @@ export class NotificationsController {
   }
 
   /**
-   * Optional internal monitoring endpoint
+   * Internal monitoring endpoint
    */
   @Get(':notificationId/statuses')
   @ApiOperation({ summary: 'Get notification statuses' })

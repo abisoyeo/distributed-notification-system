@@ -66,16 +66,9 @@ export class NotificationsService {
 
       // const content = this.mergeTemplate(template.content, dto.variables);
 
-      // Mock user & template data for now:
-      const user = {
-        email: 'ogunmonaa@gmail.com',
-        preferences: { email: true },
-      };
-
-      const template = {
-        id: 102,
-        language_code: 'es',
-      };
+      // Mocked user & template data:
+      const user = this.mockUserData(dto.user_id);
+      const template = this.mockTemplateData(dto.template_code);
 
       const queuePayload = {
         pattern: 'email',
@@ -85,9 +78,11 @@ export class NotificationsService {
           template_id: template.id,
           language_code: template.language_code,
           data: {
-            username: dto.variables.name,
-            updateDate: dto.variables.meta?.date || 'N/A',
-            settingsLink: dto.variables.link,
+            username: dto.variables.name || user.name,
+            updateDate:
+              dto.variables.meta?.date || new Date().toLocaleDateString(),
+            settingsLink:
+              dto.variables.link || 'https://your-service.com/settings',
           },
         },
       };
@@ -112,7 +107,7 @@ export class NotificationsService {
         // await firstValueFrom(this.pushClient.emit(routingKey, queuePayload));
       }
 
-      this.statusRepo.create({
+      await this.statusRepo.create({
         notificationId: dto.request_id,
         channel: dto.notification_type,
         status: 'pending',
@@ -176,5 +171,32 @@ export class NotificationsService {
 
     await channel.close();
     await conn.close();
+  }
+
+  private mockUserData(userId: string) {
+    const fakeUsers = [
+      { id: '123', name: 'Abisoye', email: 'sands007821@gmail.com' },
+      { id: '124', name: 'Immanuel', email: 'adekeyeimmanuel@gmail.com' },
+      { id: '125', name: 'Olaitan', email: 'emmfatsneh@gmail.com' },
+    ];
+
+    const found = fakeUsers.find((u) => u.id === userId);
+    return (
+      found || {
+        id: userId,
+        name: `User_${userId}`,
+        email: `${userId}@example.com`,
+      }
+    );
+  }
+
+  private mockTemplateData(templateCode: string) {
+    const templates = {
+      welcome_email: { id: 101, language_code: 'en' },
+      pref_update: { id: 102, language_code: 'es' },
+      password_reset: { id: 999, language_code: 'es' },
+    };
+
+    return templates[templateCode];
   }
 }
