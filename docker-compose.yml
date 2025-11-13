@@ -18,16 +18,16 @@ services:
       - USER_SERVICE_URL=http://user-service:8000
       - TEMPLATE_SERVICE_URL=http://template-service:8000
 
-  user-service:
-    build: ./user-service
-    ports:
-      - "8001:8000"
-    networks:
-      - notif-net
-    depends_on:
-      - postgres
-    environment:
-      - DATABASE_URL=postgresql://user:pass@postgres/userdb
+  # user-service:
+  #   build: ./user-service
+  #   ports:
+  #     - "8001:8000"
+  #   networks:
+  #     - notif-net
+  #   depends_on:
+  #     - postgres
+  #   environment:
+  #     - DATABASE_URL=postgresql://user:pass@postgres/userdb
 
   email-service:
     build: ./email-service
@@ -53,16 +53,16 @@ services:
       - REDIS_URL=redis://redis:6379
       # - GOOGLE_APPLICATION_CREDENTIALS={"type": "service_account", "project_id": "your-project-id", ...}
 
-  template-service:
-    build: ./template-service
-    ports:
-      - "8002:8000"
-    networks:
-      - notif-net
-    depends_on:
-      - postgres
-    environment:
-      - DATABASE_URL=postgresql://user:pass@postgres/userdb
+      # template-service:
+      #   build: ./template-service
+      #   ports:
+      #     - "8002:8000"
+      #   networks:
+      #     - notif-net
+      #   depends_on:
+      #     - postgres
+      #   environment:
+      #     - DATABASE_URL=postgresql://user:pass@postgres/userdb
 
   rabbitmq:
     image: rabbitmq:3-management
@@ -76,28 +76,28 @@ services:
       - RABBITMQ_DEFAULT_USER=admin
       - RABBITMQ_DEFAULT_PASS=admin123
     healthcheck:
-      test: ["CMD", "rabbitmq-diagnostics", "-q", "ping"]
+      test: [ "CMD", "rabbitmq-diagnostics", "-q", "ping" ]
       interval: 10s
       timeout: 5s
       retries: 5
       start_period: 30s
 
-  postgres:
-    image: postgres:15
-    container_name: postgres
-    networks:
-      - notif-net
-    environment:
-      - POSTGRES_PASSWORD=pass
-      - POSTGRES_USER=user
-      - POSTGRES_DB=userdb
-    volumes:
-      - postgres_data:/var/lib/postgresql/data
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U user"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
+  # postgres:
+  #   image: postgres:15
+  #   container_name: postgres
+  #   networks:
+  #     - notif-net
+  #   environment:
+  #     - POSTGRES_PASSWORD=pass
+  #     - POSTGRES_USER=user
+  #     - POSTGRES_DB=userdb
+  #   volumes:
+  #     - postgres_data:/var/lib/postgresql/data
+  #   healthcheck:
+  #     test: ["CMD-SHELL", "pg_isready -U user"]
+  #     interval: 10s
+  #     timeout: 5s
+  #     retries: 5
 
   redis:
     image: redis:latest
@@ -109,7 +109,7 @@ services:
     volumes:
       - redis_data:/data
     healthcheck:
-      test: ["CMD", "redis-cli", "ping"]
+      test: [ "CMD", "redis-cli", "ping" ]
       interval: 10s
       timeout: 5s
       retries: 5
